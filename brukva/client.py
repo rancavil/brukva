@@ -134,9 +134,10 @@ def format_pipeline_request(command_stack):
     return ''.join(format(c.cmd, *c.args, **c.kwargs) for c in command_stack)
 
 class Connection(object):
-    def __init__(self, host, port, on_connect, on_disconnect, timeout=None, io_loop=None):
+    def __init__(self, host, port, on_connect, on_disconnect, timeout=None, io_loop=None, unix_socket_path=None):
         self.host = host
         self.port = port
+        self.unix_socket_path = unix_socket_path
         self.on_connect = on_connect
         self.on_disconnect = on_disconnect
         self.timeout = timeout
@@ -149,10 +150,19 @@ class Connection(object):
 
     def connect(self):
         try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
-            sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+            protocol_family = socket.AF_INET
+            if host == None:
+                protocol_family = socket.AF_UNIX
+                
+            sock = socket.socket(protocol_family, socket.SOCK_STREAM, 0)
             sock.settimeout(self.timeout)
-            sock.connect((self.host, self.port))
+
+            if unix_socket_path == None:
+                sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+                sock.connect((self.host, self.port))
+            else:
+                sock.connect(self.unix_socket_path)
+
             self._stream = IOStream(sock, io_loop=self._io_loop)
             self.connected()
         except socket.error, e:
@@ -304,10 +314,10 @@ class _AsyncWrapper(object):
 
 class Client(object):
     def __init__(self, host='localhost', port=6379, password=None,
-            selected_db=None, io_loop=None):
+            selected_db=None, io_loop=None, unix_socket_path=None):
         self._io_loop = io_loop or IOLoop.instance()
         self.connection = Connection(host, port,
-            self.on_connect, self.on_disconnect, io_loop=self._io_loop)
+            self.on_connect, self.on_disconnect, io_loop=self._io_loop, unix_socket_path)
         self.async = _AsyncWrapper(weakref.proxy(self))
         self.queue = []
         self.current_cmd_line = None
