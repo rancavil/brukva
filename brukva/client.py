@@ -157,7 +157,7 @@ class Connection(object):
             sock = socket.socket(protocol_family, socket.SOCK_STREAM, 0)
             sock.settimeout(self.timeout)
 
-            if unix_socket_path == None:
+            if self.unix_socket_path == None:
                 sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
                 sock.connect((self.host, self.port))
             else:
