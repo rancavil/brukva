@@ -151,7 +151,7 @@ class Connection(object):
     def connect(self):
         try:
             protocol_family = socket.AF_INET
-            if self.host == None:
+            if self.unix_socket_path != None:
                 protocol_family = socket.AF_UNIX
                 
             sock = socket.socket(protocol_family, socket.SOCK_STREAM, 0)
