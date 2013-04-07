@@ -317,7 +317,7 @@ class Client(object):
             selected_db=None, io_loop=None, unix_socket_path=None):
         self._io_loop = io_loop or IOLoop.instance()
         self.connection = Connection(host, port,
-            self.on_connect, self.on_disconnect, io_loop=self._io_loop, unix_socket_path)
+            self.on_connect, self.on_disconnect, io_loop=self._io_loop, unix_socket_path=unix_socket_path)
         self.async = _AsyncWrapper(weakref.proxy(self))
         self.queue = []
         self.current_cmd_line = None
